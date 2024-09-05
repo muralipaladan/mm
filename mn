@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, initial-scale=1.0">
+    <title>Leaflet Map with WMS and GPS</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-providers@1.5.0/leaflet-providers.js"></script>
+    <style>
+        /* Ensure the map takes up full height on mobile devices */
+        html, body {
+            height: 100%;
+            margin: 0;
+        }
+        #map {
+            width: 100%;
+            height: 100vh; /* Full screen height on mobile */
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+
+    <script>
+        // Initialize the map and set the default view
+        var map = L.map('map').setView([20.5937, 78.9629], 6); // Centered on India
+
+        // Add Google Roadmap as the base map
+        L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+            maxZoom: 20,
+            subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+            attribution: 'Map data © Google'
+        }).addTo(map);
+
+        // Add WMS Layer from the provided URL
+        L.tileLayer.wms('https://bhuvan-vec1.nrsc.gov.in/bhuvan/cadastral/wms/kml', {
+            layers: 'KL_Cad',
+            format: 'image/png',
+            transparent: true,
+            attribution: "Cadastral Data © Bhuvan NRSC"
+        }).addTo(map);
+
+        // Request user's geolocation and set up GPS tracking
+        map.locate({setView: true, maxZoom: 16, watch: true});
+
+        // When GPS location is found, add a marker and circle
+        function onLocationFound(e) {
+            var radius = e.accuracy / 2;
+
+            L.marker(e.latlng).addTo(map)
+                .bindPopup("You are within " + radius + " meters from this point").openPopup();
+
+            L.circle(e.latlng, radius).addTo(map);
+        }
+
+        // Handle geolocation errors
+        function onLocationError(e) {
+            alert("Geolocation access denied. Please enable location services and refresh the page.");
+        }
+
+        // Add event listeners for geolocation
+        map.on('locationfound', onLocationFound);
+        map.on('locationerror', onLocationError);
+    </script>
+</body>
+</html>
